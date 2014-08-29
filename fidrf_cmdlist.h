@@ -28,7 +28,7 @@ typedef struct RunBuf {
    double *coef;
    char *cmd;
    int mov_cnt;		// Number of bytes to memmove
-   double *buf;
+   double buf[1];       // is resized in fid_run_newbuf()
 } RunBuf;
 
 
@@ -393,11 +393,11 @@ fid_run_newbuf(void *run) {
    if (rr->magic != 0x64966325)
       error("Bad handle passed to fid_run_newbuf()");
    
-   siz= rr->buf_size ? rr->buf_size : 1;   // Minimum one element to avoid problems
+   siz= rr->buf_size > 0 ? rr->buf_size - 1 : 0;   // Fist element is part of sizeof(RunBuf)
    rb= (RunBuf*)Alloc(sizeof(RunBuf) + siz * sizeof(double));
    rb->coef= rr->coef;
    rb->cmd= rr->cmd;
-   rb->mov_cnt= (siz-1) * sizeof(double);
+   rb->mov_cnt= siz * sizeof(double);
    // rb->buf[] already zerod
 
    return rb;
